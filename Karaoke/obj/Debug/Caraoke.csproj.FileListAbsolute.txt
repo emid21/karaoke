@@ -1,0 +1,16 @@
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\bin\Debug\Caraoke.exe.config
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\bin\Debug\Caraoke.exe
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\bin\Debug\Caraoke.pdb
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\bin\Debug\Interop.WMPLib.dll
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\bin\Debug\AxInterop.WMPLib.dll
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Interop.WMPLib.dll
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\AxInterop.WMPLib.dll
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.csproj.ResolveComReference.cache
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.Config.resources
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.Form1.resources
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.Properties.Resources.resources
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.csproj.GenerateResource.cache
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.csproj.CoreCompileInputs.cache
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.exe
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.pdb
+C:\Users\Daniela\source\repos\Caraoke\Caraoke\obj\Debug\Caraoke.csprojAssemblyReference.cache
