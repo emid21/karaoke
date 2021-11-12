@@ -18,13 +18,17 @@ namespace Caraoke
         StreamWriter tuberia;
         OpenFileDialog openFileDialog = new OpenFileDialog();
         FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-        string url;
+
+        int index = 0, indexlf;
         string[] archivo, ruta, ruta2;
+
         List<string> miLista = new List<string>();
         List<string> miListareservas = new List<string>();
-        int index = 0, indexlf;
-        bool estadolist = true;
-        IWMPPlaylist playlist, playlist2;
+        List<string> miListaconfig = new List<string>();
+
+
+        public string fileconfig, url;
+        public IWMPPlaylist playlist, playlist2;
         IWMPMedia media;
         
         public Form1()
@@ -32,9 +36,21 @@ namespace Caraoke
             InitializeComponent();
             playlist = MediaPlayer1.playlistCollection.newPlaylist("myplaylist");
             playlist2 = MediaPlayer1.playlistCollection.newPlaylist("myplaylist2");
-            tuberia = File.AppendText(@"D:\1Karaoke\config.txt");
+            string path = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).FullName;
+            fileconfig = Path.Combine(path, "config.txt");
 
-            tuberia.Close();
+            if (!File.Exists(fileconfig))
+            {
+                // Create the file.
+                using (FileStream fs = File.Create(fileconfig))
+                {
+                    Byte[] info =
+                        new UTF8Encoding(true).GetBytes(@"D:\1Karaoke\1");
+                    // Add some information to the file.
+                    fs.Write(info, 0, info.Length);
+                }
+            }
+
             leertxt();
             playlistpv();
             WindowState = FormWindowState.Maximized;
@@ -44,7 +60,6 @@ namespace Caraoke
         
         private void button2_Click(object sender, EventArgs e)
         {
-            //listBox1.Items.Clear();
             openFileDialog.Multiselect = true;
             openFileDialog.InitialDirectory = label1.Text;
             openFileDialog.Filter = " archivo MP4 |*.mp4| archivo MP3 |*.mp3| archivo AVI |*.avi";
@@ -74,7 +89,7 @@ namespace Caraoke
             {
                 label1.Text = folderBrowserDialog.SelectedPath;
 
-                StreamWriter file = new StreamWriter(@"D:\1Karaoke\config.txt", false);
+                StreamWriter file = new StreamWriter(fileconfig, false);
                 file.WriteLine(folderBrowserDialog.SelectedPath);
                 file.Flush();
                 file.Close();
@@ -86,10 +101,30 @@ namespace Caraoke
         public void leertxt()
         {
             StreamReader tuberia;
-            tuberia = File.OpenText(@"D:\1Karaoke\config.txt");
+            tuberia = File.OpenText(fileconfig);
+            string[] listaconfig;
+
+            var text = @"D:\1Karaoke\1";
+            string[] lineaTexto;
             try
             {
-                url = tuberia.ReadLine();
+                foreach (string item in File.ReadAllLines(fileconfig, Encoding.Default))
+                {
+                    lineaTexto = item.Split(Convert.ToChar(@"-"));
+                    switch (lineaTexto[0])
+                    {
+                        case "url":
+                            miListaconfig.Add(lineaTexto[1]);
+                            return;
+                        case "url2":
+                            miListaconfig.Add(lineaTexto[1]);
+                            return;
+                        default:
+                            break;
+                    }
+                }
+
+                url = miListaconfig[0];
                 label1.Text = url;
                 tuberia.Close();
             }
@@ -102,13 +137,13 @@ namespace Caraoke
         public void playlistpv()
         {
             listBox1.Items.Clear();
-            archivo = new DirectoryInfo(url).GetFiles("*.*", SearchOption.AllDirectories).Select(o => o.Name).Where(s => s.EndsWith(".mp4") || s.EndsWith(".avi")).ToArray<string>();
-            
-            ruta = Directory.GetFiles(url, "*.*", SearchOption.AllDirectories)
+            archivo = new DirectoryInfo(miListaconfig[0]).GetFiles("*.*", SearchOption.AllDirectories).Select(o => o.Name).Where(s => s.EndsWith(".mp4") || s.EndsWith(".avi")).ToArray<string>();
+
+            ruta = Directory.GetFiles(miListaconfig[0], "*.*", SearchOption.AllDirectories)
             .Where(s => s.EndsWith(".mp4") || s.EndsWith(".avi")).ToArray<string>();
 
             //playlist = MediaPlayer1.playlistCollection.newPlaylist("myplaylist");
-            
+
             for (int i = 0; i < archivo.Length; i++)
             {
                 listBox1.Items.Add(archivo[i]);
@@ -117,9 +152,8 @@ namespace Caraoke
             }
             //
             MediaPlayer1.currentPlaylist = playlist;
-            MediaPlayer1.Ctlcontrols.play();
+            MediaPlayer1.Ctlcontrols.playItem(playlist.Item[0]);
             listBox1.SelectedIndex = 0;
-
         }
 
         private void listBox1_KeyDown(object sender, KeyEventArgs e)
@@ -210,9 +244,11 @@ namespace Caraoke
         
         private void txt_codigo_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.P)
+            if (e.KeyCode == Keys.C)
             {
-                bonton();
+                Config config = new Config(url);
+                config.ShowDialog();
+                //bonton();
             }
             if (e.KeyCode == Keys.X)
             {
