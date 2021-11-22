@@ -1,2 +1,6 @@
-url-D:\1Karaoke
-url2-D:\1Karaoke\1
+D:\1Karaoke
+D:\1Karaoke\1
+D:\1Karaoke\1
+50
+false
+true

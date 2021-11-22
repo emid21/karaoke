@@ -10,13 +10,18 @@ using System.Windows.Forms;
 using System.IO;
 using WMPLib;
 using System.Text.RegularExpressions;
+using System.Configuration;
+using System.Threading; 
+using System.Timers;
+using System.Security.Cryptography;
+using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 
-namespace Caraoke
+namespace Karaoke
 {
     public partial class Form1 : Form
-    {
-        StreamWriter tuberia;
-        OpenFileDialog openFileDialog = new OpenFileDialog();
+    { 
+        
         FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
 
         int index = 0, indexlf;
@@ -24,212 +29,136 @@ namespace Caraoke
 
         List<string> miLista = new List<string>();
         List<string> miListareservas = new List<string>();
-        List<string> miListaconfig = new List<string>();
-
-
-        public string fileconfig, url;
+        
         public IWMPPlaylist playlist, playlist2;
         IWMPMedia media;
+        string[] extenciones = { ".mp4", ".avi", ".mp3" };
+        public System.Windows.Forms.Timer temporizador = new System.Windows.Forms.Timer();
+        public int Tiempo = 0;
+
+        //C4B2E76CE1E2CD9D08643D79A2672877
+        //BitProject2020
+
+        public string hash = BitConverter.ToString(MD5.Create().ComputeHash(Encoding.ASCII.GetBytes("BitProject2020"))).Replace("-","");
         
         public Form1()
         {
             InitializeComponent();
+
+            pictureBox2.Controls.Add(MediaPlayer1);
+            pictureBox2.Location = new Point(0, 0);
+            pictureBox2.BackColor = Color.Transparent;
+
+            //pictureBox1.BackColor = Color.Transparent;
+            //pictureBox1.Parent = pictureBox2;
+
             playlist = MediaPlayer1.playlistCollection.newPlaylist("myplaylist");
-            playlist2 = MediaPlayer1.playlistCollection.newPlaylist("myplaylist2");
-            string path = Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location).FullName;
-            fileconfig = Path.Combine(path, "config.txt");
-
-            if (!File.Exists(fileconfig))
-            {
-                // Create the file.
-                using (FileStream fs = File.Create(fileconfig))
-                {
-                    Byte[] info =
-                        new UTF8Encoding(true).GetBytes(@"D:\1Karaoke\1");
-                    // Add some information to the file.
-                    fs.Write(info, 0, info.Length);
-                }
-            }
-
-            leertxt();
+            playlist2 = MediaPlayer1.playlistCollection.newPlaylist("myplaylist2"); 
+            
             playlistpv();
             WindowState = FormWindowState.Maximized;
             listBox1.Visible = false;
+            listBox2.Visible = false;
+            label1.Visible = false;
             this.ActiveControl = txt_codigo;
-        }
-        
-        private void button2_Click(object sender, EventArgs e)
-        {
-            openFileDialog.Multiselect = true;
-            openFileDialog.InitialDirectory = label1.Text;
-            openFileDialog.Filter = " archivo MP4 |*.mp4| archivo MP3 |*.mp3| archivo AVI |*.avi";
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            
+            var macAddr =
+                (
+                    from nic in NetworkInterface.GetAllNetworkInterfaces()
+                    where nic.OperationalStatus == OperationalStatus.Up
+                    select nic.GetPhysicalAddress().ToString()
+                ).FirstOrDefault();
+            string chash = ConfigurationManager.AppSettings["hash"].ToString();
+            string chash2 = ConfigurationManager.AppSettings["hash2"].ToString();
+
+            if (chash == hash && chash2 == macAddr)
             {
-                string[] data = openFileDialog.SafeFileNames;
-
-                for (int i = 0; i < data.Length; i++)
-                {
-                    listBox1.Items.Add(data[i]);
-                }
-                //archivo = openFileDialog.SafeFileNames;
-                archivo = archivo.Concat(data).ToArray();
-                //ruta = openFileDialog.FileNames;
-                ruta = ruta.Concat(openFileDialog.FileNames).ToArray();
-            }
-        }
-        
-        private void button1_Click(object sender, EventArgs e)
-        {
-            bonton();
-        }
-
-        public void bonton()
-        {
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            {
-                label1.Text = folderBrowserDialog.SelectedPath;
-
-                StreamWriter file = new StreamWriter(fileconfig, false);
-                file.WriteLine(folderBrowserDialog.SelectedPath);
-                file.Flush();
-                file.Close();
-                leertxt();
-                playlistpv();
-            }
-        }
-        
-        public void leertxt()
-        {
-            StreamReader tuberia;
-            tuberia = File.OpenText(fileconfig);
-            string[] listaconfig;
-
-            var text = @"D:\1Karaoke\1";
-            string[] lineaTexto;
-            try
-            {
-                foreach (string item in File.ReadAllLines(fileconfig, Encoding.Default))
-                {
-                    lineaTexto = item.Split(Convert.ToChar(@"-"));
-                    switch (lineaTexto[0])
-                    {
-                        case "url":
-                            miListaconfig.Add(lineaTexto[1]);
-                            return;
-                        case "url2":
-                            miListaconfig.Add(lineaTexto[1]);
-                            return;
-                        default:
-                            break;
-                    }
-                }
-
-                url = miListaconfig[0];
-                label1.Text = url;
-                tuberia.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("error: " + ex.Message);
-            }
-        }
-
-        public void playlistpv()
-        {
-            listBox1.Items.Clear();
-            archivo = new DirectoryInfo(miListaconfig[0]).GetFiles("*.*", SearchOption.AllDirectories).Select(o => o.Name).Where(s => s.EndsWith(".mp4") || s.EndsWith(".avi")).ToArray<string>();
-
-            ruta = Directory.GetFiles(miListaconfig[0], "*.*", SearchOption.AllDirectories)
-            .Where(s => s.EndsWith(".mp4") || s.EndsWith(".avi")).ToArray<string>();
-
-            //playlist = MediaPlayer1.playlistCollection.newPlaylist("myplaylist");
-
-            for (int i = 0; i < archivo.Length; i++)
-            {
-                listBox1.Items.Add(archivo[i]);
-                media = MediaPlayer1.newMedia(ruta[i]);
-                playlist.appendItem(media);
-            }
-            //
-            MediaPlayer1.currentPlaylist = playlist;
-            MediaPlayer1.Ctlcontrols.playItem(playlist.Item[0]);
-            listBox1.SelectedIndex = 0;
-        }
-
-        private void listBox1_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                if (MediaPlayer1.currentPlaylist.name == "myplaylist2")
-                {
-                    MediaPlayer1.currentPlaylist = playlist;
-                    lbl_actual.Text = "";
-                    lbl_reserva.Text = "";
-                    playlist2.clear();
-                    miListareservas.Clear();
-                    indexlf = 0;
-                    index = 0;
-                    txt_codigo.Clear();
-                    //MediaPlayer1.URL = ruta[listBox1.SelectedIndex];
-                }
-                MediaPlayer1.Ctlcontrols.playItem(playlist.Item[listBox1.SelectedIndex]);
                 
             }
+            else
+            {
+                temporizador.Interval = 1000;
+                temporizador.Start();
+            }
         }
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            MediaPlayer1.settings.setMode("loop", true);
+            temporizador.Tick += new EventHandler(Cuenta);
+        }
+        void Cuenta(object sender, EventArgs e)
+        {
+            Tiempo += 1;
+            label1.Text = Tiempo.ToString();
+            if (Tiempo == 1800)
+            {
+                Application.Exit();
+            }
+        }
+        public void playlistpv()
+        {
+            Random rnd = new Random();
+            List<string> miLis = new List<string>();
+            listBox1.Items.Clear();
+            if (ConfigurationManager.AppSettings["urlvideo"] != "" && Directory.Exists(ConfigurationManager.AppSettings["urlvideo"]))
+            {
+                archivo = new DirectoryInfo(ConfigurationManager.AppSettings["urlvideo"].ToString()).GetFiles("*.*", SearchOption.AllDirectories).Select(o => o.Name)
+                    .Where(s => s.EndsWith(".mp4") || s.EndsWith(".avi") || s.EndsWith(".mp3")).ToArray<string>();
+
+                ruta = Directory.GetFiles(ConfigurationManager.AppSettings["urlvideo"].ToString(), "*.*", SearchOption.AllDirectories)
+                    .Where(s => s.EndsWith(".mp4") || s.EndsWith(".avi") || s.EndsWith(".mp3")).ToArray<string>() ;
+
+                if (ConfigurationManager.AppSettings["videos_aleatorios"].ToString() == "true")
+                {
+                    Shuffle(ruta);
+                }
+            
+                for (int i = 0; i < archivo.Length; i++)
+                {
+                    listBox1.Items.Add((i + 1) + " - " + (i + 1));
+                    media = MediaPlayer1.newMedia(ruta[i]);
+                    playlist.appendItem(media);
+                }
+            
+                MediaPlayer1.currentPlaylist = playlist;
+                MediaPlayer1.Ctlcontrols.playItem(playlist.Item[0]);
+                listBox1.SelectedIndex = 0;
+            }
+        }
+
+        public static void Shuffle<T>(IList<T> values)
+        {
+            var n = values.Count;
+            var rnd = new Random();
+            for (int i = n - 1; i > 0; i--)
+            {
+                var j = rnd.Next(0, i);
+                var temp = values[i];
+                values[i] = values[j];
+                values[j] = temp;
+            }
+        }
+        
+        private void txt_codigo_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '-'))
+            {
+                e.Handled = true;
+            }
         }
         
         private void MediaPlayer1_PlayStateChange(object sender, AxWMPLib._WMPOCXEvents_PlayStateChangeEvent e)
         {
             string name = MediaPlayer1.currentPlaylist.name;
-            string reserva = "";
-            if (e.newState == 8 &&name == "myplaylist")
+            
+            if (e.newState == 8 && name == "myplaylist")
             {
-                if (listBox1.SelectedIndex == listBox1.Items.Count - 1)
-                {
-                    listBox1.SelectedIndex = 0;
-                    lbl_actual.Text = "";
-                }
-                else
-                {
-                    listBox1.SelectedIndex = listBox1.SelectedIndex + 1;
-                }
+                nextcanciones();
             }
             if (e.newState == 8 && name == "myplaylist2" && playlist2.count > 0)
             {
-                string[] lineaTexto = miListareservas[0].Split(Convert.ToChar(@"-"));
-                string nom = lineaTexto[lineaTexto.Count() - 1];
-                miListareservas.RemoveAt(0);
-                index--;
-                int n = playlist2.count;
-                if (index == 0)
-                {
-                    MediaPlayer1.currentPlaylist = playlist;
-                    if (indexlf == 0)
-                    {
-                        //MediaPlayer1.Ctlcontrols.playItem(playlist.Item[0]);
-                        //MediaPlayer1.Ctlcontrols.playItem(playlist.Item[listBox1.SelectedIndex]);
-                        listBox1.SelectedIndex = 0;
-                    }
-                    else
-                    {
-                        MediaPlayer1.Ctlcontrols.playItem(playlist.Item[(indexlf - 1)]);
-                    }
-
-                    lbl_actual.Text = "";
-                    playlist2.clear();
-                }
-                n = playlist2.count;
-                for (int i = 1; i < miListareservas.Count; i++)
-                {
-                    reserva = reserva + " " + miListareservas[i];
-                }
-                lbl_reserva.Text = reserva;
+                removercanciones();
             }
 
             if(e.newState == 3)
@@ -238,126 +167,303 @@ namespace Caraoke
                 {
                     lbl_actual.Text = miListareservas[0];
                 }
-                //MediaPlayer1.Ctlcontrols.playItem(playlist2.Item[0]);
             }
+        }
+        public void nextcanciones()
+        {
+            if (listBox1.SelectedIndex == listBox1.Items.Count - 1)
+            {
+                listBox1.SelectedIndex = 0;
+                lbl_actual.Text = "";
+            }
+            else
+            {
+                listBox1.SelectedIndex = listBox1.SelectedIndex + 1;
+            }
+            if (MediaPlayer1.currentMedia.isIdentical[playlist.Item[playlist.count - 1]])
+            {
+                MediaPlayer1.Ctlcontrols.play();
+            }
+        }
+        public void removercanciones()
+        {
+            string reserva = "";
+            miListareservas.RemoveAt(0);
+            index--;
+            int n = playlist2.count;
+            if (index == 0)
+            {
+                MediaPlayer1.currentPlaylist = playlist;
+                if (indexlf == 0)
+                {
+                    listBox1.SelectedIndex = 0;
+                }
+                else
+                {
+                    MediaPlayer1.Ctlcontrols.playItem(playlist.Item[(indexlf - 1)]);
+                }
+
+                lbl_actual.Text = "";
+                playlist2.clear();
+                miLista.Clear();
+                listBox2.Items.Clear();
+            }
+            else
+            {
+                miLista.RemoveAt(0);
+                listBox2.Items.RemoveAt(0);
+            }
+
+            for (int i = 1; i < miListareservas.Count; i++)
+            {
+                reserva = reserva + " " + miListareservas[i];
+            }
+            
+            lbl_reserva.Text = reserva;
         }
         
         private void txt_codigo_KeyDown(object sender, KeyEventArgs e)
         {
+            Configuraciones config = new Configuraciones();
+            string[] lineaTexto;
             if (e.KeyCode == Keys.C)
             {
-                Config config = new Config(url);
                 config.ShowDialog();
-                //bonton();
             }
+            
             if (e.KeyCode == Keys.X)
             {
                 Application.Exit();
             }
+
             if (e.KeyCode == Keys.L)
             {
                 if (listBox1.Visible)
                 {
                     listBox1.Visible = false;
+                    txt_codigo.Clear();
                 }
                 else
                 {
                     listBox1.Visible = true;
                 }
             }
+
+            if (e.KeyCode == Keys.A)
+            {
+                if (listBox2.Visible)
+                {
+                    listBox2.Visible = false;
+                    txt_codigo.Clear();
+                }
+                else
+                {
+                    listBox2.Visible = true;
+                }
+            }
+
+            if (e.KeyCode == Keys.B)
+            {
+                for (int i = 0; i < playlist.count - 1; i++)
+                {
+                    if (MediaPlayer1.currentMedia.isIdentical[playlist.Item[i]])
+                    {
+                        MediaPlayer1.Ctlcontrols.playItem(playlist.Item[i]);
+                        break;
+                    }
+                }
+            }
+
+            if (e.KeyCode == Keys.S)
+            {
+                MediaPlayer1.Ctlcontrols.next();
+                if (MediaPlayer1.currentPlaylist.name == "myplaylist2" && playlist2.count > 0)
+                {
+                    removercanciones();
+                }
+                if (MediaPlayer1.currentPlaylist.name == "myplaylist")
+                {
+                    nextcanciones();
+                }
+            }
+
+            if (e.KeyCode == Keys.P)
+            {
+                if ( MediaPlayer1.playState == WMPPlayState.wmppsPlaying)
+                {
+                    MediaPlayer1.Ctlcontrols.pause();
+                }
+                else
+                {
+                    MediaPlayer1.Ctlcontrols.play();
+                }
+            }
+
+            if (e.KeyCode == Keys.Down)
+            {
+                if (listBox1.Visible)
+                {
+                    if (listBox1.SelectedIndex < listBox1.Items.Count - 1)
+                    {
+                        listBox1.SelectedIndex = listBox1.SelectedIndex + 1;
+                        lineaTexto = listBox1.SelectedItem.ToString().Split(Convert.ToChar(@"-"));
+                        txt_codigo.Text = "-" + lineaTexto[1];
+                    }
+                }
+            }
+
+            if (e.KeyCode == Keys.Up)
+            {
+                if (listBox1.Visible)
+                {
+                    if (listBox1.SelectedIndex > 0)
+                    {
+                        listBox1.SelectedIndex = listBox1.SelectedIndex - 1;
+                        lineaTexto = listBox1.SelectedItem.ToString().Split(Convert.ToChar(@"-"));
+                        txt_codigo.Text = "-" + lineaTexto[1];
+                    }
+                }
+            }
+
             if (e.KeyCode == Keys.Enter)
             {
                 e.Handled = true;
                 e.SuppressKeyPress = true;
-                try
+                if (listBox1.Visible)
                 {
-                    if (lbl_actual.Text != null)
+                    if (MediaPlayer1.currentPlaylist.name == "myplaylist2")
                     {
-                        string[] lineaTexto;
-                        string texto = txt_codigo.Text;
-                        
-                        lineaTexto = texto.Split(Convert.ToChar(@"-"));
-
-                        string  rutav = url;
-
-                        for (int i = 0; i < lineaTexto.Length; i++)
+                        MediaPlayer1.currentPlaylist = playlist;
+                        playlist2.clear();
+                        miListareservas.Clear();
+                        limpiar();
+                    }
+                    MediaPlayer1.Ctlcontrols.playItem(playlist.Item[listBox1.SelectedIndex]);
+                    listBox1.Visible = false;
+                    txt_codigo.Clear();
+                }
+                else
+                {
+                    try
+                    {
+                        if (lbl_actual.Text != null)
                         {
-                            rutav += "\\" + lineaTexto[i];
-                        }
-                       
-                        if (File.Exists(rutav+".mp4"))
-                        {
-                            miLista.Add(rutav + ".mp4");
-                            listBox2.Items.Add(rutav + ".mp4");
-
-                        }
-                        if (File.Exists(rutav + ".avi"))
-                        {
-                            miLista.Add(rutav + ".avi");
-                            listBox2.Items.Add(rutav + ".avi");
-                        }
-
-                        ruta2 = miLista.ToArray();
-                        
-                        media = MediaPlayer1.newMedia(ruta2[ruta2.Length - 1]);
-                        playlist2.appendItem(media);
-                        
-                        if (index==0)
-                        {
-                            for (int i = 0; i < playlist.count - 1; i++)
+                            if (ConfigurationManager.AppSettings["url"].ToString() != "" && Directory.Exists(ConfigurationManager.AppSettings["url"].ToString()))
                             {
-                                if (MediaPlayer1.currentMedia.isIdentical[playlist.Item[i]])
+                                string rutav = ConfigurationManager.AppSettings["url"].ToString();
+                                
+                                int id=0;
+
+                                lineaTexto = txt_codigo.Text.Split(Convert.ToChar(@"-"));
+
+                                for (int i = 0; i < lineaTexto.Length; i++)
                                 {
-                                    indexlf = i;
-                                    break;
+                                    rutav += "\\" + lineaTexto[i];
                                 }
-                            }
 
-                            MediaPlayer1.currentPlaylist = playlist2;
-                            MediaPlayer1.Ctlcontrols.play();
-                            lbl_actual.Text = txt_codigo.Text;
-                        }
-
-                        index++;
-                        miListareservas.Add(txt_codigo.Text);
-                        string reserva = "";
-                        for (int i = 0; i < miListareservas.Count; i++)
-                        {
-                            if (lbl_actual.Text == miListareservas[i])
-                            {
-                                reserva = "";
+                                for (int i = 0; i < extenciones.Length; i++)
+                                {
+                                    if (File.Exists(rutav + extenciones[i]))
+                                    {
+                                        string exits = miLista.Find(x => x == rutav + extenciones[i]);
+                                        if (ConfigurationManager.AppSettings["reservas_mp"].ToString() == "true" || exits == null)
+                                        {
+                                            miLista.Add(rutav + extenciones[i]);
+                                            listBox2.Items.Add(txt_codigo.Text);
+                                            agregarreservacancion(rutav);
+                                        }
+                                        else
+                                        {
+                                            MessageBox.Show("Ya esta reservado", "Error");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        id++;
+                                    }
+                                }
+                                if (id == extenciones.Length)
+                                {
+                                    MessageBox.Show("no existe", "Error");
+                                }
                             }
                             else
                             {
-                                reserva = reserva + " " + miListareservas[i];
+                                MessageBox.Show("Error : Tiene agregar un Directorio de pistas de karaoke", "Error");
+                                config.ShowDialog();
                             }
+                            txt_codigo.Clear();
                         }
-                        lbl_reserva.Text = reserva;
-                        txt_codigo.Clear();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error : \n" + ex.Message, "Error");
                     }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error : \n" + ex.Message, "Error");
-                }
-                
             }
-            //txt_codigo.Clear();
         }
 
-        public void play()
+        public void agregarreservacancion(string rutav)
         {
-            if (listBox1.SelectedIndex < listBox1.Items.Count - 1)
+            ruta2 = miLista.ToArray();
+
+            media = MediaPlayer1.newMedia(ruta2[ruta2.Length - 1]);
+            playlist2.appendItem(media);
+
+            if (index == 0)
             {
-                listBox1.SelectedIndex = listBox1.SelectedIndex + 1;
+                for (int i = 0; i < playlist.count - 1; i++)
+                {
+                    if (MediaPlayer1.currentMedia.isIdentical[playlist.Item[i]])
+                    {
+                        indexlf = i;
+                        break;
+                    }
+                }
+
+                MediaPlayer1.currentPlaylist = playlist2;
+                MediaPlayer1.Ctlcontrols.play();
+                lbl_actual.Text = txt_codigo.Text;
             }
+
+            index++;
+            miListareservas.Add(txt_codigo.Text);
+            string reserva = "";
+            
+            for (int i = 0; i < miListareservas.Count; i++)
+            {
+                
+                if (lbl_actual.Text == miListareservas[i])
+                {
+                    if (ConfigurationManager.AppSettings["reservas_mp"].ToString() == "true" && i>0)
+                    {
+                        reserva = reserva + " " + miListareservas[i];
+                    }
+                }
+                else
+                {
+                    reserva = reserva + " " + miListareservas[i];
+                }
+            }
+            lbl_reserva.Text = reserva;
         }
+
+        public void limpiar()
+        {
+            lbl_actual.Text = "";
+            lbl_reserva.Text = "";
+            indexlf = 0;
+            index = 0;
+            txt_codigo.Clear();
+            miLista.Clear();
+            playlist2.clear();
+            listBox2.DataSource = null;
+            listBox2.Items.Clear();
+        }
+        public void sonido(int valor)
+        {
+            MediaPlayer1.settings.volume = valor;
+        }
+        
     }
 }
-
-//El tiempo de 30 minutos de 
-//prueba a termiando.
-//Si desea tener el programa
-//sin limite de tiempo, deberá
-//registrarlo.
-

@@ -1,0 +1,17 @@
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\bin\Release\Interop.WMPLib.dll
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\bin\Release\AxInterop.WMPLib.dll
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.csprojAssemblyReference.cache
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Interop.WMPLib.dll
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\AxInterop.WMPLib.dll
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.csproj.ResolveComReference.cache
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.csproj.GenerateResource.cache
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.csproj.CoreCompileInputs.cache
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\bin\Release\Karaoke.exe.config
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\bin\Release\Karaoke.exe
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\bin\Release\Karaoke.pdb
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.Configuraciones.resources
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.Form1.resources
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.Properties.Resources.resources
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.exe
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.pdb
+C:\Users\Daniela\source\repos\Karaoke\Karaoke\obj\Release\Karaoke.Logo.resources
